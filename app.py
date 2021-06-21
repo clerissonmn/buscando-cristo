@@ -30,7 +30,6 @@ def get_csv_to_df(doc_key='1Behv9qOYb-1vfK4Mx8fUACmt6FCyLelaEdjQVEvuQmA', sheet_
 
     return df
 
-
 def aplica_filtro(df=None, programas=None, natureza=None, bairro=None, verbose=False):
     
     if verbose: print('Programas:', programas)
@@ -64,44 +63,75 @@ def aplica_filtro(df=None, programas=None, natureza=None, bairro=None, verbose=F
     if verbose: print('Saindao da função. Tudo ok!')
     return df_filtrado.fillna('').sort_values(by='Programação')
 
+# -------------[ Dados: Baixa os dados]------------- #
 
 df = get_csv_to_df(verbose=verbose)
+bairros = [i for i in df.Bairro.dropna().unique()]
+
+# -------------[ STREAMLIT: containers]------------- #
+
+header = st.beta_container()
+user_input = st.beta_container()
+output_table = st.beta_container()
+author_credits = st.beta_container()
+
+# -------------[ STREAMLIT: header]------------- #
+
+with header:
+    st.title('Mapa de horários')
+    st.markdown("""
+    #### Importante! 
+      - Confirmar os horários;
+      - Necessidade de agendamento;
+      - Necessidade de senha.
+
+**Dica:** Se os `Filtros` não estiverem aparecendo, clique no ícone `>` no canto
+superior esquerdo da tela.
+    """)
 
 # -------------[ STREAMLIT : Controles]------------- #
-st.subheader(f'Mostrar: ')
-programas = list()
-if st.checkbox('Confissão'):
-    programas.append('Confissão')
-if st.checkbox('Missa', value=True):
-    programas.append('Missa')
-if st.checkbox('Adoração'):
-    programas.append('Adoração')
+
+with user_input:
+    st.sidebar.subheader(f'Filtros: ')
+
+    st.sidebar.subheader(f'Mostrar: ')
+    cb_confissao = st.sidebar.checkbox('Confissão')
+    cb_missa = st.sidebar.checkbox('Missa', value=True)
+    cb_adoracao = st.sidebar.checkbox('Adoração')
+
+    programas = list()
+    if cb_confissao:
+        programas.append('Confissão')
+    if cb_missa:
+        programas.append('Missa')
+    if cb_adoracao:
+        programas.append('Adoração')
 
 
-st.subheader(f'Apenas: ')
-rb_natureza = st.radio('',
-                        ('Todos', 'Transmitido', 'Presencial'),
-                        index=2)
+    st.sidebar.subheader(f'Ver: ')
+    rb_natureza = st.sidebar.radio('',
+                            ('Todos', 'Transmitido', 'Presencial'),
+                            index=2)
 
-if rb_natureza == 'Transmitido':
-    natureza = ['Transmitido']
-elif rb_natureza == 'Presencial':
-    natureza = ['Presencial']
-else:
-    natureza = None
-
-bairros = [i for i in df.Bairro.dropna().unique()]
-if rb_natureza == "Transmitido":
-    bairro = ['Todos']
-else:
-    st.subheader(f'Bairros: ')
-    if st.checkbox('Escolher bairros'):
-        bairro = st.multiselect(
-                '',
-                bairros,
-                bairros[0])
+    if rb_natureza == 'Transmitido':
+        natureza = ['Transmitido']
+    elif rb_natureza == 'Presencial':
+        natureza = ['Presencial']
     else:
+        natureza = None
+
+    if rb_natureza == "Transmitido":
         bairro = ['Todos']
+    else:
+        st.sidebar.subheader(f'Bairros: ')
+        cb_mostra_bairros = st.sidebar.checkbox('Escolher bairros')
+        if cb_mostra_bairros:
+            bairro = st.sidebar.multiselect(
+                    '',
+                    bairros,
+                    bairros[0])
+        else:
+            bairro = ['Todos']
 
 
 # -------------[ STREAMLIT : Dados]------------- #
@@ -110,8 +140,15 @@ colunas = ['Local','Bairro', 'Contato',
            'Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
 
 data = aplica_filtro(df=df, programas=programas, natureza=natureza, bairro=bairro, verbose=verbose)
+tabela = data[colunas].set_index('Local')
 
-# -------------[ STREAMLIT : View]------------- #
-st.title('Mapa de horários')
-data.set_index('Local')
-st.table(data[colunas].set_index('Local'))
+# --[ STREAMLIT: header]---------------------- #
+
+with output_table:
+    st.table(tabela)
+
+with author_credits:
+    #st.header(f'Credits')
+    st.markdown("""
+    "Pedi e vos será dado; buscai e achareis; batei e vos será aberto."**$_{(Mt\,7,7)}$**    
+    """)
