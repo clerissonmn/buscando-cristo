@@ -4,6 +4,11 @@ import pandas as pd
 import streamlit as st
 import requests
 
+# ----[ Flags ]--------------------------------------------------------------------------- #
+
+verbose = False
+
+# ----[Funções ]-------------------------------------------------------------------------- #
 
 def get_csv_to_df(doc_key='1Behv9qOYb-1vfK4Mx8fUACmt6FCyLelaEdjQVEvuQmA', sheet_name='df', verbose=False):
     """
@@ -21,6 +26,8 @@ def get_csv_to_df(doc_key='1Behv9qOYb-1vfK4Mx8fUACmt6FCyLelaEdjQVEvuQmA', sheet_
     
     df = pd.read_csv(raw_csv)
     
+    if verbose: st.write(df)
+
     return df
 
 
@@ -58,7 +65,7 @@ def aplica_filtro(df=None, programas=None, natureza=None, bairro=None, verbose=F
     return df_filtrado.fillna('').sort_values(by='Programação')
 
 
-df = get_csv_to_df()
+df = get_csv_to_df(verbose=verbose)
 
 # -------------[ STREAMLIT : Controles]------------- #
 st.subheader(f'Mostrar: ')
@@ -102,9 +109,9 @@ else:
 colunas = ['Local','Bairro', 'Contato', 
            'Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
 
-data = aplica_filtro(df=df, programas=programas, natureza=natureza, bairro=bairro, verbose=True)
+data = aplica_filtro(df=df, programas=programas, natureza=natureza, bairro=bairro, verbose=verbose)
 
 # -------------[ STREAMLIT : View]------------- #
 st.title('Mapa de horários')
-
-st.write(data[colunas])
+data.set_index('Local')
+st.table(data[colunas].set_index('Local'))
