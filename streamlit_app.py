@@ -30,13 +30,12 @@ def get_csv_to_df(doc_key='1Behv9qOYb-1vfK4Mx8fUACmt6FCyLelaEdjQVEvuQmA', sheet_
 
     return df
 
-def aplica_filtro(df=None, programas=None, natureza=None, bairros=None, verbose=False):
+def aplica_filtro(df=None, programas=None, natureza=None, bairros=None, cidades=None,verbose=False):
     
     if verbose: print('Programas:', programas)
     if verbose: print('Natureza:',natureza)
     if verbose: print('Bairro:', bairro)
     if verbose: print('Bairros:', bairros)
-    
     
     df_filtrado = df.copy()
 
@@ -58,6 +57,11 @@ def aplica_filtro(df=None, programas=None, natureza=None, bairros=None, verbose=
         filtro_bairro = f"{bairros} in Bairro"
         df_filtrado = df_filtrado.query(filtro_bairro)
 
+    # ----[Filtro: Cidades]---- #
+
+    if not "Todas" in cidades:
+        filtro_cidade = f"{cidades} in Cidade"
+        df_filtrado = df_filtrado.query(filtro_cidade)
 
     # ----[Mostra df]---- #
     if verbose: print('Saindao da função. Tudo ok!')
@@ -98,11 +102,12 @@ with user_input:
         sb_mostrar  = cols[0].selectbox('Mostrar:', ['Missa','Adoração','Confissão'])
         sb_natureza = cols[1].selectbox('Tipo', ['Presencial','Transmitido'])
         ms_bairros  = cols[2].multiselect('Bairro:', bairros)
-        #cols[3].selectbox('Cidade:', cidades)
+        sb_cidades  = cols[3].selectbox('Cidade:', ['Todas']+cidades)
     
     programas = [sb_mostrar]
     natureza  = [sb_natureza]
     bairros   = ms_bairros
+    cidades   = [sb_cidades]
 
     texto = f"Horário das"
 
@@ -121,18 +126,24 @@ with user_input:
 
     if len(ms_bairros) == 0:
         #texto += ', em todos os bairros'
-        #texto += ' em'
+        texto += ' em'
         pass
     else:
         texto += ' em alguns bairros de'
 
+    if sb_cidades == "Todas":
+        texto += ' Belém e Ananindeua'
+    elif sb_cidades == "Belém":
+        texto += ' Belém'
+    elif sb_cidades == "Ananindeua":        
+        texto += ' Ananindeua'
     st.subheader(texto)
 
 # -------------[ STREAMLIT : Dados]------------- #
 
     colunas = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
 
-    data = aplica_filtro(df=df, programas=programas, natureza=natureza, bairros=bairros, verbose=verbose)
+    data = aplica_filtro(df=df, programas=programas, natureza=natureza, bairros=bairros, cidades=cidades, verbose=verbose)
     data['indice'] = data['Local']+' |'+data['Endereço']+', '+data['Bairro']+' | '+data['Contato']+'|'
 
     data.set_index('indice', inplace=True)
