@@ -121,8 +121,10 @@ with user_input:
 
     if sb_natureza == "Presencial":
         texto += ' presenciais'
+        sep1, sep2 = [' |',', ']
     elif sb_natureza == "Transmitido":
         texto += ' transmitidas'
+        sep1, sep2 = [' ','']
 
     if len(ms_bairros) == 0:
         #texto += ', em todos os bairros'
@@ -142,9 +144,9 @@ with user_input:
 # -------------[ STREAMLIT : Dados]------------- #
 
     colunas = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
-
+    
     data = aplica_filtro(df=df, programas=programas, natureza=natureza, bairros=bairros, cidades=cidades, verbose=verbose)
-    data['indice'] = data['Local']+' |'+data['Endereço']+', '+data['Bairro']+' | '+data['Contato']+'|'
+    data['indice'] = data['Local']+sep1+data['Endereço']+sep2+data['Bairro']+sep1+data['Contato']+sep2
 
     data.set_index('indice', inplace=True)
 
