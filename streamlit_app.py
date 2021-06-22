@@ -136,19 +136,23 @@ with user_input:
 
 # -------------[ STREAMLIT : Dados]------------- #
 
-colunas = ['Local','Bairro', 'Contato', 
-           'Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
+colunas = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
 
 data = aplica_filtro(df=df, programas=programas, natureza=natureza, bairro=bairro, verbose=verbose)
-tabela = data[colunas].set_index('Local')
+data['indice'] = data['Local']+' |'+data['Endereço']+', '+data['Bairro']+' | '+data['Contato']+'|'
 
-# --[ STREAMLIT: header]---------------------- #
+data.set_index('indice', inplace=True)
+
+tabela = data[colunas]
+
+# --[ STREAMLIT: output ]---------------------- #
 
 with output_table:
+    
     st.table(tabela)
 
 with author_credits:
-    #st.header(f'Credits')
+    #st.header(f'Estatística')
     st.markdown("""
     "Pedi e vos será dado; buscai e achareis; batei e vos será aberto."**$_{(Mt\,7,7)}$**    
     """)
