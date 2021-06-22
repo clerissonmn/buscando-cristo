@@ -9,7 +9,7 @@ import requests
 verbose = False
 
 # ----[Funções ]-------------------------------------------------------------------------- #
-
+@st.cache()
 def get_csv_to_df(doc_key='1Behv9qOYb-1vfK4Mx8fUACmt6FCyLelaEdjQVEvuQmA', sheet_name='df', verbose=False):
     """
     Baixa o csv a partir do googlesheet
@@ -30,7 +30,7 @@ def get_csv_to_df(doc_key='1Behv9qOYb-1vfK4Mx8fUACmt6FCyLelaEdjQVEvuQmA', sheet_
 
     return df
 
-def aplica_filtro(df=None, programas=None, natureza=None, bairro=None, verbose=False):
+def aplica_filtro(df=None, programas=None, natureza=None, bairros=None, verbose=False):
     
     if verbose: print('Programas:', programas)
     if verbose: print('Natureza:',natureza)
@@ -54,8 +54,8 @@ def aplica_filtro(df=None, programas=None, natureza=None, bairro=None, verbose=F
 
     # ----[Filtro: Bairro]---- #
 
-    if not 'Todos' in bairro:
-        filtro_bairro = f"{bairro} in Bairro"
+    if len(bairros)>0:
+        filtro_bairro = f"{bairros} in Bairro"
         df_filtrado = df_filtrado.query(filtro_bairro)
 
 
@@ -65,8 +65,10 @@ def aplica_filtro(df=None, programas=None, natureza=None, bairro=None, verbose=F
 
 # -------------[ Dados: Baixa os dados]------------- #
 
-df = get_csv_to_df(verbose=verbose)
+with st.spinner(text='Carregando a tabela'):
+    df = get_csv_to_df(verbose=verbose)
 bairros = [i for i in df.Bairro.dropna().unique()]
+cidades = [i for i in df.Cidade.dropna().unique()]
 
 # -------------[ STREAMLIT: containers]------------- #
 
@@ -84,71 +86,60 @@ with header:
       - Confirmar os horários;
       - Necessidade de agendamento;
       - Necessidade de senha.
-
-**Dica:** Se os `Filtros` não estiverem aparecendo, clique no ícone `>` no canto
-superior esquerdo da tela.
     """)
 
 # -------------[ STREAMLIT : Controles]------------- #
 
 with user_input:
-    st.sidebar.subheader(f'Filtros: ')
 
-    st.sidebar.subheader(f'Mostrar: ')
-    cb_confissao = st.sidebar.checkbox('Confissão')
-    cb_missa = st.sidebar.checkbox('Missa', value=True)
-    cb_adoracao = st.sidebar.checkbox('Adoração')
+    # Controles
+    with st.beta_expander('Filtrar'):
+        cols = st.beta_columns(4)
+        sb_mostrar  = cols[0].selectbox('Mostrar:', ['Missa','Adoração','Confissão'])
+        sb_natureza = cols[1].selectbox('Tipo', ['Presencial','Transmitido'])
+        ms_bairros  = cols[2].multiselect('Bairro:', bairros)
+        #cols[3].selectbox('Cidade:', cidades)
+    
+    programas = [sb_mostrar]
+    natureza  = [sb_natureza]
+    bairros   = ms_bairros
 
-    programas = list()
-    if cb_confissao:
-        programas.append('Confissão')
-    if cb_missa:
-        programas.append('Missa')
-    if cb_adoracao:
-        programas.append('Adoração')
+    texto = f"Horário das"
 
+    # Missa, adoração ou confissões
+    if sb_mostrar == "Missa":
+        texto += ' missas'
+    elif sb_mostrar == "Adoração":
+        texto += ' adorações'
+    elif sb_mostrar == "Confissão":
+        texto += ' confissões'
 
-    st.sidebar.subheader(f'Ver: ')
-    rb_natureza = st.sidebar.radio('',
-                            ('Todos', 'Transmitido', 'Presencial'),
-                            index=2)
+    if sb_natureza == "Presencial":
+        texto += ' presenciais'
+    elif sb_natureza == "Transmitido":
+        texto += ' transmitidas'
 
-    if rb_natureza == 'Transmitido':
-        natureza = ['Transmitido']
-    elif rb_natureza == 'Presencial':
-        natureza = ['Presencial']
+    if len(ms_bairros) == 0:
+        #texto += ', em todos os bairros'
+        #texto += ' em'
+        pass
     else:
-        natureza = None
+        texto += ' em alguns bairros de'
 
-    if rb_natureza == "Transmitido":
-        bairro = ['Todos']
-    else:
-        st.sidebar.subheader(f'Bairros: ')
-        cb_mostra_bairros = st.sidebar.checkbox('Escolher bairros')
-        if cb_mostra_bairros:
-            bairro = st.sidebar.multiselect(
-                    '',
-                    bairros,
-                    bairros[0])
-        else:
-            bairro = ['Todos']
-
+    st.subheader(texto)
 
 # -------------[ STREAMLIT : Dados]------------- #
 
-colunas = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
+    colunas = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
 
-data = aplica_filtro(df=df, programas=programas, natureza=natureza, bairro=bairro, verbose=verbose)
-data['indice'] = data['Local']+' |'+data['Endereço']+', '+data['Bairro']+' | '+data['Contato']+'|'
+    data = aplica_filtro(df=df, programas=programas, natureza=natureza, bairros=bairros, verbose=verbose)
+    data['indice'] = data['Local']+' |'+data['Endereço']+', '+data['Bairro']+' | '+data['Contato']+'|'
 
-data.set_index('indice', inplace=True)
+    data.set_index('indice', inplace=True)
 
-tabela = data[colunas]
+    tabela = data[colunas]
 
-# --[ STREAMLIT: output ]---------------------- #
-
-with output_table:
-    
+# -------------[ STREAMLIT: Mostra a tabela ]------------- #
     st.table(tabela)
 
 with author_credits:
