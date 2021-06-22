@@ -86,10 +86,15 @@ author_credits = st.beta_container()
 with header:
     st.title('Mapa de horários')
     st.markdown("""
-    #### Importante! 
-      - Confirmar os horários;
-      - Necessidade de agendamento;
-      - Necessidade de senha.
+    
+**Atenção:** É importante entrar em contato com a paróquia ou igraja para
+confirmar:
+
+- Se os **horários** sofreram mudança;
+- Necessidade de **agendamento**;
+- Necessidade de **senha**;
+
+    **Dica:** Clique abaixo para filtrar os resultados.
     """)
 
 # -------------[ STREAMLIT : Controles]------------- #
