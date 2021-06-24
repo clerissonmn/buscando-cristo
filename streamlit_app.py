@@ -1,4 +1,5 @@
 from io import BytesIO
+from streamlit_disqus import st_disqus
 
 import pandas as pd
 import streamlit as st
@@ -7,6 +8,8 @@ import requests
 # ----[ Flags ]--------------------------------------------------------------------------- #
 
 verbose = False
+
+disqus = False
 
 # ----[Funções ]-------------------------------------------------------------------------- #
 @st.cache()
@@ -79,7 +82,8 @@ cidades = [i for i in df.Cidade.dropna().unique()]
 header = st.beta_container()
 user_input = st.beta_container()
 output_table = st.beta_container()
-author_credits = st.beta_container()
+ajude = st.beta_container()
+
 
 # -------------[ STREAMLIT: header]------------- #
 
@@ -155,8 +159,28 @@ with user_input:
 # -------------[ STREAMLIT: Mostra a tabela ]------------- #
     st.table(tabela)
 
-with author_credits:
-    #st.header(f'Estatística')
-    st.markdown("""
-    "Pedi e vos será dado; buscai e achareis; batei e vos será aberto."**$_{(Mt\,7,7)}$**    
-    """)
+
+#with author_credits:
+#    #st.header(f'Estatística')
+#    st.markdown("""
+#    "Pedi e vos será dado; buscai e achareis; batei e vos será aberto."**$_{(Mt\,7,7)}$**    
+#    """)
+
+if disqus:
+    with ajude:
+        st.subheader('Não achou sua paróqia, capela ou igreja em nossa lista?')
+        st.markdown("""
+    Basta clicar no botão abaixo e
+    enviar as informações nos comentários. Da mesma forma você também pode nos
+    ajudar corrigindo alguma informação equivocada, basta nos informar:
+
+    - Nome da paróquia, capela, igreja...
+    - Endereço
+    - Contatos da secretaria
+    - Horários
+    - Observações do tipo "precisa de agendamento" ou "pegar senha", etc.
+        """)
+
+    
+        with st.beta_expander('Clique'):
+            st_disqus("buscando-cristo")
