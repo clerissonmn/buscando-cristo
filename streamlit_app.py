@@ -1,5 +1,4 @@
 from io import BytesIO
-from streamlit_disqus import st_disqus
 
 import pandas as pd
 import streamlit as st
@@ -9,7 +8,8 @@ import requests
 
 verbose = False
 
-disqus = False
+# Habilita o formulário de envio
+enviar_novo = False
 
 # ----[Funções ]-------------------------------------------------------------------------- #
 @st.cache()
@@ -82,7 +82,7 @@ cidades = [i for i in df.Cidade.dropna().unique()]
 header = st.beta_container()
 user_input = st.beta_container()
 output_table = st.beta_container()
-ajude = st.beta_container()
+forma_envio = st.beta_container()
 
 
 # -------------[ STREAMLIT: header]------------- #
@@ -166,8 +166,8 @@ with user_input:
 #    "Pedi e vos será dado; buscai e achareis; batei e vos será aberto."**$_{(Mt\,7,7)}$**    
 #    """)
 
-if disqus:
-    with ajude:
+if enviar_novo:
+    with form_envio:
         st.subheader('Não achou sua paróqia, capela ou igreja em nossa lista?')
         st.markdown("""
     Basta clicar no botão abaixo e
@@ -180,7 +180,3 @@ if disqus:
     - Horários
     - Observações do tipo "precisa de agendamento" ou "pegar senha", etc.
         """)
-
-    
-        with st.beta_expander('Clique'):
-            st_disqus("buscando-cristo")
