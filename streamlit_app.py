@@ -13,7 +13,7 @@ import os
 verbose = False
 
 # ----[Funções ]-------------------------------------------------------------------------- #
-@st.cache()
+#@st.cache()
 def get_csv_to_df(doc_key='1Behv9qOYb-1vfK4Mx8fUACmt6FCyLelaEdjQVEvuQmA', sheet_name='df', verbose=False):
     """
     Baixa o csv a partir do googlesheet
