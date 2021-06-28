@@ -190,7 +190,7 @@ Use o formulário abaixo.
         if 'novo' in acao:
             st.subheader('Dados do local')
             cols = st.beta_columns(3)
-            frm_programacao = cols[0].selectbox("Programação",['Missa', 'Adoração', 'Confissão', "Mais de uma opção"])
+            frm_programacao = cols[0].selectbox("Programação",["Missa e Confissão", 'Missa', 'Adoração', 'Confissão'])
             frm_nome        = cols[1].text_input(label='Nome')
             frm_endereco    = cols[2].text_input(label='Endereço')
             frm_contato     = cols[0].text_input(label='Contato')
