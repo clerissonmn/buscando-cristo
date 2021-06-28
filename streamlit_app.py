@@ -80,9 +80,10 @@ cidades = [i for i in df.Cidade.dropna().unique()]
 
 # -------------[ STREAMLIT: containers]------------- #
 
-header = st.beta_container()
-area_principal = st.beta_container()
-form_envio = st.beta_container()
+header          = st.beta_container()
+area_principal  = st.beta_container()
+sobre_projeto   = st.beta_container()
+form_envio      = st.beta_container()
 
 # -------------[ STREAMLIT: header]------------- #
 
@@ -159,17 +160,28 @@ with area_principal:
     st.table(tabela)
 
 
-#with author_credits:
-#    #st.header(f'Estatística')
-#    st.markdown("""
-#    "Pedi e vos será dado; buscai e achareis; batei e vos será aberto."**$_{(Mt\,7,7)}$**    
-#    """)
+with sobre_projeto:
+    st.header(f'Sobre o projeto')
+    st.markdown(f""" Esta é uma iniciativa independente, ou seja, **não vinculado** à nenhuma
+paróquia ou igreja em particular e conta com trabalho exclusivamente volutário.
+As informações são obtidas mediante a coleta dos dados pelos próprios
+mantenedores do App ou enviadas a eles por irmãos em Cristo.""")
+    #st.markdown("""
+    #"Pedi e vos será dado; buscai e achareis; batei e vos será aberto."**$_{(Mt\,7,7)}$**    
+    #""")
 
 
 with form_envio:
-    st.subheader('Você é bem-vindo a ajudar!')
-    st.markdown("""Esta lista é um esforço coletivo e você é muito bem-vindo a
-ajudar!
+    st.subheader('Você também é muito bem-vindo a ajudar!!!')
+    st.markdown(""" Você é convidado a nos ajudar a manter as informações o mais
+confiável possível. Faça da forma que puder, por exemplo, você pode:
+- Enviar horários de novos locais;
+- Corrigir ou acrescentar os contatos;
+- Corrigir ou completar os endereços dos locais;
+- Adicionar observações para determinados horários. Por exemplo, se são missas
+mais rápidas ou se precisa de agendamento, etc.
+
+Use o formulário abaixo.
 """)
     acao = st.radio('',['Quero enviar um novo', 'Quero enviar uma correção'])
     
