@@ -100,12 +100,12 @@ with header:
 with area_principal:
 
     # Controles
-    with st.beta_expander('Filtrar'):
-        cols = st.beta_columns(4)
-        sb_mostrar  = cols[0].selectbox('Mostrar:', ['Missa','Adoração','Confissão'])
-        sb_natureza = cols[1].selectbox('Tipo', ['Presencial','Transmitido'])
-        ms_bairros  = cols[2].multiselect('Bairro:', bairros)
-        sb_cidades  = cols[3].selectbox('Cidade:', ['Todas']+cidades)
+    #with st.beta_expander('Filtrar'):
+    cols = st.beta_columns(4)
+    sb_mostrar  = cols[0].selectbox('Mostrar:', ['Missa','Adoração','Confissão'])
+    sb_natureza = cols[1].selectbox('Tipo', ['Presencial','Transmitido'])
+    ms_bairros  = cols[2].multiselect('Bairro:', bairros)
+    sb_cidades  = cols[3].selectbox('Cidade:', ['Todas']+cidades)
     
     programas = [sb_mostrar]
     natureza  = [sb_natureza]
