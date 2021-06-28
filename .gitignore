@@ -130,3 +130,7 @@ dmypy.json
 
 # .vscode/
 .vscode/
+
+exportavar.sh
+run_streamlit.sh
+secrets.toml

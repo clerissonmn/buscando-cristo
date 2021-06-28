@@ -4,14 +4,16 @@ import pandas as pd
 import streamlit as st
 import requests
 
+from funcoes.email import envia_email
+
+import os
+
 # ----[ Flags ]--------------------------------------------------------------------------- #
 
 verbose = False
 
-# Habilita o formulário de envio
-enviar_novo = False
-
 # ----[Funções ]-------------------------------------------------------------------------- #
+@st.cache()
 def get_csv_to_df(doc_key='1Behv9qOYb-1vfK4Mx8fUACmt6FCyLelaEdjQVEvuQmA', sheet_name='df', verbose=False):
     """
     Baixa o csv a partir do googlesheet
@@ -79,10 +81,8 @@ cidades = [i for i in df.Cidade.dropna().unique()]
 # -------------[ STREAMLIT: containers]------------- #
 
 header = st.beta_container()
-user_input = st.beta_container()
-output_table = st.beta_container()
-forma_envio = st.beta_container()
-
+area_principal = st.beta_container()
+form_envio = st.beta_container()
 
 # -------------[ STREAMLIT: header]------------- #
 
@@ -97,7 +97,7 @@ with header:
 
 # -------------[ STREAMLIT : Controles]------------- #
 
-with user_input:
+with area_principal:
 
     # Controles
     with st.beta_expander('Filtrar'):
@@ -165,17 +165,73 @@ with user_input:
 #    "Pedi e vos será dado; buscai e achareis; batei e vos será aberto."**$_{(Mt\,7,7)}$**    
 #    """)
 
-if enviar_novo:
-    with form_envio:
-        st.subheader('Não achou sua paróqia, capela ou igreja em nossa lista?')
-        st.markdown("""
-    Basta clicar no botão abaixo e
-    enviar as informações nos comentários. Da mesma forma você também pode nos
-    ajudar corrigindo alguma informação equivocada, basta nos informar:
 
-    - Nome da paróquia, capela, igreja...
-    - Endereço
-    - Contatos da secretaria
-    - Horários
-    - Observações do tipo "precisa de agendamento" ou "pegar senha", etc.
+with form_envio:
+    st.subheader('Você é bem-vindo a ajudar!')
+    st.markdown("""Esta lista é um esforço coletivo e você é muito bem-vindo a
+ajudar!
+""")
+    acao = st.radio('',['Quero enviar um novo', 'Quero enviar uma correção'])
+    
+    with st.form('Envio',clear_on_submit=True):
+        #st.write("Preencha o formulário com os dados da paróquia, igreja, capela, etc.")
+        if 'novo' in acao:
+            st.subheader('Dados do local')
+            cols = st.beta_columns(3)
+            frm_programacao = cols[0].selectbox("Programação",['Missa', 'Adoração', 'Confissão', "Mais de uma opção"])
+            frm_nome        = cols[1].text_input(label='Nome')
+            frm_endereco    = cols[2].text_input(label='Endereço')
+            frm_contato     = cols[0].text_input(label='Contato')
+            frm_bairro      = cols[1].text_input(label='Bairro')
+            frm_municipio   = cols[2].text_input(label='Município')
+            
+            txt_dinamico = 'Horários'
+            assunto = "Novo"
+            lbl_horario = 'Horários:'
+            texto = f"""
+            Nome: {frm_nome}<br>
+            Endereço: {frm_endereco}<br>
+            Contato: {frm_contato}<br>
+            Tipo: {frm_programacao}<br>
+            Bairro: {frm_bairro}<br>
+            Municipio: {frm_municipio}<br>
+            Horários:"""
+        elif 'correção' in acao:
+            txt_dinamico = 'Qual a correção'
+            assunto = 'Correção'
+            texto='Correção: '
+            lbl_horario = ''
+        st.subheader(f'{txt_dinamico}')
+        if txt_dinamico == 'Horários':
+            st.markdown("""**Dica:** Escreva da forma mais confortável pra você mas coloque, também, as observações.
+
+**Exemplos:**
+
+    Missas:
+    seg-sex 7h, 10h (cura), 12h
+    ter 13h (rápida)
+    qui 20h (agendamento pelo whatsapp)
+
+    Confissão:
+    seg 9 às 12h (mediante agendamento)
         """)
+        frm_horarios = st.text_area(label=f'{lbl_horario}')
+        
+        enviado = st.form_submit_button("Enviar")
+        if enviado:
+            destinatario = 'clerisson.mn@gmail.com'
+            remetente = os.environ['var02']
+            senha = os.environ['var01']
+            
+            mensagem = texto + f'{frm_horarios}'
+            try:
+                envia_email(destinatario=destinatario,
+                            remetente=remetente,
+                            senha=senha,
+                            mensagem=mensagem,
+                            assunto=assunto)
+            except:
+                st.error("Houve algum problema com o envio.")
+            finally:
+                st.success('Enviado com sucesso, obrigado pela sua ajuda!')
+                st.balloons()
