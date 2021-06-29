@@ -27,19 +27,17 @@ def get_csv_to_df(doc_key='1Behv9qOYb-1vfK4Mx8fUACmt6FCyLelaEdjQVEvuQmA', sheet_
     assert response.status_code == 200, 'Wrong status code'
     
     raw_csv = BytesIO(response.content)
-    
+
     df = pd.read_csv(raw_csv)
-    
-    if verbose: st.write(df)
 
     return df
 
-def aplica_filtro(df=None, programas=None, natureza=None, bairros=None, cidades=None,verbose=False):
+def aplica_filtro(df=None, programas=None, natureza=None, bairros=None, cidades=None,verbose=False, local=None):
     
     if verbose: print('Programas:', programas)
     if verbose: print('Natureza:',natureza)
-    if verbose: print('Bairro:', bairro)
     if verbose: print('Bairros:', bairros)
+    if verbose: print('Locais', local)
     
     df_filtrado = df.copy()
 
@@ -67,6 +65,11 @@ def aplica_filtro(df=None, programas=None, natureza=None, bairros=None, cidades=
         filtro_cidade = f"{cidades} in Cidade"
         df_filtrado = df_filtrado.query(filtro_cidade)
 
+    # ----[Filtro: Local]---- #
+    if not "Tudo" in local:
+        filtro_local = f"{local} in Local"
+        df_filtrado = df_filtrado.query(filtro_local)
+
     # ----[Mostra df]---- #
     if verbose: print('Saindao da função. Tudo ok!')
     return df_filtrado.fillna('').sort_values(by='Programação')
@@ -75,8 +78,10 @@ def aplica_filtro(df=None, programas=None, natureza=None, bairros=None, cidades=
 
 with st.spinner(text='Carregando a tabela'):
     df = get_csv_to_df(verbose=verbose)
-bairros = [i for i in df.Bairro.dropna().unique()]
-cidades = [i for i in df.Cidade.dropna().unique()]
+
+bairros = df.Bairro.sort_values().dropna().unique().tolist()
+cidades = df.Cidade.sort_values().dropna().unique().tolist()
+igrejas = df.Local.sort_values().dropna().unique().tolist()
 
 # -------------[ STREAMLIT: containers]------------- #
 
@@ -98,6 +103,7 @@ with header:
 
 # -------------[ STREAMLIT : Controles]------------- #
 
+
 with area_principal:
 
     # Controles
@@ -106,12 +112,16 @@ with area_principal:
     sb_mostrar  = cols[0].selectbox('Mostrar:', ['Missa','Adoração','Confissão'])
     sb_natureza = cols[1].selectbox('Tipo', ['Presencial','Transmitido'])
     ms_bairros  = cols[2].multiselect('Bairro:', bairros)
-    sb_cidades  = cols[3].selectbox('Cidade:', ['Todas']+cidades)
+    sb_cidades  = cols[3].selectbox('Município:', ['Todas']+cidades)
     
+    #with st.beta_expander('Procurar por local'):
+    sb_igrejas = st.selectbox('Locais: ',['Tudo']+igrejas, )
+
     programas = [sb_mostrar]
     natureza  = [sb_natureza]
     bairros   = ms_bairros
     cidades   = [sb_cidades]
+    locais    = [sb_igrejas]
 
     texto = f"Horário das"
 
@@ -143,20 +153,27 @@ with area_principal:
         texto += ' Belém'
     elif sb_cidades == "Ananindeua":        
         texto += ' Ananindeua'
-    st.subheader(texto)
+
 
 # -------------[ STREAMLIT : Dados]------------- #
 
     colunas = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
     
-    data = aplica_filtro(df=df, programas=programas, natureza=natureza, bairros=bairros, cidades=cidades, verbose=verbose)
+    data = aplica_filtro(df=df, 
+                         programas=programas, 
+                         natureza=natureza, 
+                         bairros=bairros, 
+                         cidades=cidades,
+                         local=locais,
+                         verbose=verbose)
+
     data['indice'] = data['Local']+sep1+data['Endereço']+sep2+data['Bairro']+sep1+data['Contato']+sep2
 
     data.set_index('indice', inplace=True)
 
-    tabela = data[colunas]
-
 # -------------[ STREAMLIT: Mostra a tabela ]------------- #
+    st.subheader(texto)
+    tabela = data[colunas]
     st.table(tabela)
 
 
