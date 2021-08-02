@@ -213,7 +213,7 @@ Use o formulário abaixo.
             frm_contato     = cols[0].text_input(label='Contato')
             frm_bairro      = cols[1].text_input(label='Bairro')
             frm_municipio   = cols[2].text_input(label='Município')
-            
+
             txt_dinamico = 'Horários'
             assunto = "Novo"
             lbl_horario = 'Horários:'
@@ -248,19 +248,32 @@ Use o formulário abaixo.
         
         enviado = st.form_submit_button("Enviar")
         if enviado:
-            destinatario = 'clerisson.mn@gmail.com'
-            remetente = os.environ['var02']
-            senha = os.environ['var01']
             
-            mensagem = texto + f'{frm_horarios}'
-            try:
-                envia_email(destinatario=destinatario,
-                            remetente=remetente,
-                            senha=senha,
-                            mensagem=mensagem,
-                            assunto=assunto)
-            except:
-                st.error("Houve algum problema com o envio.")
-            finally:
-                st.success('Enviado com sucesso, obrigado pela sua ajuda!')
-                st.balloons()
+            validacao = [
+            frm_nome != "",
+            frm_endereco != "",
+            frm_contato != "",
+            frm_bairro != "",
+            frm_municipio != "",
+            frm_horarios != ""]
+
+            if all(validacao):
+                
+                destinatario = 'clerisson.mn@gmail.com'
+                remetente = os.environ['var02']
+                senha = os.environ['var01']
+                
+                mensagem = texto + f'{frm_horarios}'
+                try:
+                    envia_email(destinatario=destinatario,
+                                remetente=remetente,
+                                senha=senha,
+                                mensagem=mensagem,
+                                assunto=assunto)
+                except:
+                    st.error("Houve algum problema com o envio.")
+                finally:
+                    st.success('Enviado com sucesso, obrigado pela sua ajuda!')
+                    st.balloons()
+            else:
+                st.error('Uma ou mais respostas parecem estar em branco. Você digitou todas as informações?')
